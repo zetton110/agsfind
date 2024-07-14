@@ -46,3 +46,9 @@ Create / Update / Delete local database.
 | `-c, --create` | Create local db. |
 | `-u, --update` | Update local db to latest. |
 | `-d, --delete` | Delete local db. |
+
+## How to build
+Run this command.
+```
+go build -o cmkish
+```
