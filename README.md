@@ -47,8 +47,10 @@ Create / Update / Delete local database.
 | `-u, --update` | Update local db to latest. |
 | `-d, --delete` | Delete local db. |
 
-## How to build
-Run this command.
+## How to develop
+
+### Build app
+
 ```
-go build -o cmkish
+make build-app
 ```
