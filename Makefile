@@ -1,2 +1,2 @@
 build-app:
-	go build -o cmkish
+	go build -o cmkish -v
