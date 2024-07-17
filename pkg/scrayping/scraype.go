@@ -2,7 +2,9 @@ package scraype
 
 import (
 	"archive/zip"
+	"bufio"
 	"bytes"
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
@@ -51,36 +53,55 @@ func getZipUrl(siteURL, zipFilePath string) string {
 	return u.String()
 }
 
-func ExtractText(zipUrl string) (string, error) {
+func ExtractText(zipUrl string) ([][]string, error) {
 	resp, err := http.Get(zipUrl)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", nil
+		return nil, err
 	}
 
 	r, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	for _, file := range r.File {
 		if path.Ext(file.Name) == ".csv" {
+
 			f, err := file.Open()
 			if err != nil {
-				return "", err
+				return nil, err
 			}
-			b, err := io.ReadAll(f)
-			f.Close()
+			defer f.Close()
+
+			var fixedLines []string
+
+			scanner := bufio.NewScanner(f)
+			for scanner.Scan() {
+				line := scanner.Text()
+				line = strings.ReplaceAll(line, "\\\"", "\"\"")
+				fixedLines = append(fixedLines, line)
+			}
+
+			if err := scanner.Err(); err != nil {
+				fmt.Println("Error reading file:", err)
+				return nil, err
+			}
+
+			fixedReader := csv.NewReader(strings.NewReader(strings.Join(fixedLines, "\n")))
+
+			// CSVデータを読み込む
+			records, err := fixedReader.ReadAll()
 			if err != nil {
-				return "", err
+				fmt.Println("Error parsing CSV:", err)
+				return nil, err
 			}
-			return string(b), nil
+			return records, nil
 		}
 	}
-
-	return "", errors.New("contents not found")
+	return nil, errors.New("contents not found")
 }

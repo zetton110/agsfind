@@ -11,11 +11,11 @@ func CreateDB(c *cli.Context) error {
 
 	zipUrlList := scrayping.GetZipUrlList("http://anison.info/data/download.html")
 	fmt.Println(zipUrlList)
-	dataText, err := scrayping.ExtractText(zipUrlList[0])
+	csvRows, err := scrayping.ExtractText(zipUrlList[0])
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(dataText)
+	fmt.Println(csvRows)
 
 	return nil
 }
