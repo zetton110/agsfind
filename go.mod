@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/PuerkitoBio/goquery v1.9.2
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/urfave/cli v1.22.15
 )
 
