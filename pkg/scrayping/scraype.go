@@ -11,20 +11,24 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Program struct {
-	ID          int
-	category    string
-	gameType    string
-	Name        string
-	NameYomi    string
-	NameSub     string
-	NameSubYomi string
-	startDate   string
+	ID           int
+	Category     string
+	GameType     string
+	Name         string
+	NameRuby     string
+	NameSub      string
+	NameSubRuby  string
+	EpisodeCount string
+	AgeLimit     string
+	StartDate    time.Time
 }
 
 func GetZipUrlList(siteURL string) []string {
@@ -53,7 +57,7 @@ func getZipUrl(siteURL, zipFilePath string) string {
 	return u.String()
 }
 
-func ExtractText(zipUrl string) ([][]string, error) {
+func ExtractText(zipUrl string) ([]Program, error) {
 	resp, err := http.Get(zipUrl)
 	if err != nil {
 		return nil, err
@@ -81,7 +85,13 @@ func ExtractText(zipUrl string) ([][]string, error) {
 			var fixedLines []string
 
 			scanner := bufio.NewScanner(f)
+
+			isHeader := true
 			for scanner.Scan() {
+				if isHeader {
+					isHeader = false
+					continue
+				}
 				line := scanner.Text()
 				line = strings.ReplaceAll(line, "\\\"", "\"\"")
 				fixedLines = append(fixedLines, line)
@@ -93,15 +103,42 @@ func ExtractText(zipUrl string) ([][]string, error) {
 			}
 
 			fixedReader := csv.NewReader(strings.NewReader(strings.Join(fixedLines, "\n")))
-
-			// CSVデータを読み込む
 			records, err := fixedReader.ReadAll()
 			if err != nil {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err
 			}
-			return records, nil
+
+			programs := []Program{}
+
+			for _, record := range records {
+
+				id, err := strconv.Atoi(record[0])
+				if err != nil {
+					return nil, err
+				}
+
+				programs = append(programs, Program{
+					ID:           id,
+					Category:     record[1],
+					GameType:     record[2],
+					Name:         record[3],
+					NameRuby:     record[4],
+					NameSub:      record[5],
+					NameSubRuby:  record[6],
+					EpisodeCount: record[7],
+					AgeLimit:     record[8],
+					StartDate:    str2time(record[9]),
+				})
+			}
+			return programs, nil
 		}
 	}
 	return nil, errors.New("contents not found")
+}
+
+func str2time(t string) time.Time {
+	tz, _ := time.LoadLocation("Asia/Tokyo")
+	timeJST, _ := time.ParseInLocation("2006-01-02", t, tz)
+	return timeJST
 }
