@@ -35,20 +35,20 @@ This command allows you to search for information on a program's theme song by i
 
 ### Manipulate local database
 
-Create / Update / Delete local database.
+Create and Update local database.
 
 #### COMMANDS:
 
-#### `cmkish db [-c][-u][-d]`
+#### `cmkish makedb`
+Create local db.
 
-| OPTION | DESCRIPTION |
-| ---- | ---- |
-| `-c, --create` | Create local db. |
-| `-u, --update` | Update local db to latest. |
-| `-d, --delete` | Delete local db. |
+#### `cmkish updatedb`
+Update local db to latest.
 
-## How to build
-Run this command.
+## How to develop
+
+### Build app
+
 ```
-go build -o cmkish
+make build
 ```
