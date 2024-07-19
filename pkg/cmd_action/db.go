@@ -1,25 +1,27 @@
-package cmd
+package action
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/urfave/cli"
-	scrayping "github.com/zetton110/cmkish-cli/pkg/scrayping"
+	model "github.com/zetton110/cmkish-cli/model"
+	crawler "github.com/zetton110/cmkish-cli/pkg/web_scraype"
 )
 
 func MakeDB(c *cli.Context) error {
 
-	zipUrlList := scrayping.GetZipUrlList("http://anison.info/data/download.html")
-	programs, err := scrayping.ExtractText(zipUrlList[0]) // program.csv
+	zipUrlList := crawler.GetZipUrlList("http://anison.info/data/download.html")
+
+	programs, err := crawler.ExtractPrograms(zipUrlList[0]) // program.csv
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
+
 	db, err := setUpDB("database.sqlite")
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	for _, p := range programs {
@@ -61,7 +63,7 @@ func setUpDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func insertProgram(db *sql.DB, p scrayping.Program) error {
+func insertProgram(db *sql.DB, p model.Program) error {
 	_, err := db.Exec(`
 		REPLACE INTO programs(
 			ID, 

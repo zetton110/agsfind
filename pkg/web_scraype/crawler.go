@@ -2,9 +2,7 @@ package scraype
 
 import (
 	"archive/zip"
-	"bufio"
 	"bytes"
-	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
@@ -16,20 +14,9 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	model "github.com/zetton110/cmkish-cli/model"
+	csv_access "github.com/zetton110/cmkish-cli/pkg/csv_access"
 )
-
-type Program struct {
-	ID           int
-	Category     string
-	GameType     string
-	Name         string
-	NameRuby     string
-	NameSub      string
-	NameSubRuby  string
-	EpisodeCount string
-	AgeLimit     string
-	StartDate    time.Time
-}
 
 func GetZipUrlList(siteURL string) []string {
 	doc, _ := goquery.NewDocument(siteURL)
@@ -57,7 +44,7 @@ func getZipUrl(siteURL, zipFilePath string) string {
 	return u.String()
 }
 
-func ExtractText(zipUrl string) ([]Program, error) {
+func ExtractPrograms(zipUrl string) ([]model.Program, error) {
 	resp, err := http.Get(zipUrl)
 	if err != nil {
 		return nil, err
@@ -82,59 +69,48 @@ func ExtractText(zipUrl string) ([]Program, error) {
 			}
 			defer f.Close()
 
-			var fixedLines []string
-
-			scanner := bufio.NewScanner(f)
-
-			isHeader := true
-			for scanner.Scan() {
-				if isHeader {
-					isHeader = false
-					continue
-				}
-				line := scanner.Text()
-				line = strings.ReplaceAll(line, "\\\"", "\"\"")
-				fixedLines = append(fixedLines, line)
-			}
-
-			if err := scanner.Err(); err != nil {
-				fmt.Println("Error reading file:", err)
-				return nil, err
-			}
-
-			fixedReader := csv.NewReader(strings.NewReader(strings.Join(fixedLines, "\n")))
-			records, err := fixedReader.ReadAll()
+			records, err := csv_access.GetRecords(f)
 			if err != nil {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err
 			}
 
-			programs := []Program{}
-
-			for _, record := range records {
-
-				id, err := strconv.Atoi(record[0])
-				if err != nil {
-					return nil, err
-				}
-
-				programs = append(programs, Program{
-					ID:           id,
-					Category:     record[1],
-					GameType:     record[2],
-					Name:         record[3],
-					NameRuby:     record[4],
-					NameSub:      record[5],
-					NameSubRuby:  record[6],
-					EpisodeCount: record[7],
-					AgeLimit:     record[8],
-					StartDate:    str2time(record[9]),
-				})
+			programs, err := records2Programs(records)
+			if err != nil {
+				fmt.Println("Error serialize Program:", err)
+				return nil, err
 			}
+
 			return programs, nil
 		}
 	}
 	return nil, errors.New("contents not found")
+}
+
+func records2Programs(records [][]string) ([]model.Program, error) {
+	programs := []model.Program{}
+
+	for _, record := range records {
+
+		id, err := strconv.Atoi(record[0])
+		if err != nil {
+			return nil, err
+		}
+
+		programs = append(programs, model.Program{
+			ID:           id,
+			Category:     record[1],
+			GameType:     record[2],
+			Name:         record[3],
+			NameRuby:     record[4],
+			NameSub:      record[5],
+			NameSubRuby:  record[6],
+			EpisodeCount: record[7],
+			AgeLimit:     record[8],
+			StartDate:    str2time(record[9]),
+		})
+	}
+	return programs, nil
 }
 
 func str2time(t string) time.Time {
