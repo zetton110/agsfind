@@ -10,7 +10,7 @@ import (
 	scrayping "github.com/zetton110/cmkish-cli/pkg/scrayping"
 )
 
-func CreateDB(c *cli.Context) error {
+func MakeDB(c *cli.Context) error {
 
 	zipUrlList := scrayping.GetZipUrlList("http://anison.info/data/download.html")
 	programs, err := scrayping.ExtractText(zipUrlList[0]) // program.csv
