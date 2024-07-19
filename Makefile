@@ -1,2 +1,2 @@
-build-app:
-	go build -o cmkish -v
+build:
+	go build -o cmkish -v ./cmd/cmkish/main.go
