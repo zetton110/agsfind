@@ -2,6 +2,7 @@ package action
 
 import (
 	"database/sql"
+	"os"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -20,6 +21,35 @@ func MakeDB(c *cli.Context) error {
 	}
 
 	db, err := setUpDB("database.sqlite")
+	if err != nil {
+		return err
+	}
+
+	for _, p := range programs {
+		err := insertProgram(db, p)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func UpdateDB(c *cli.Context) error {
+
+	_, err := os.Stat("database.sqlite")
+	if err != nil {
+		return err
+	}
+
+	zipUrlList := crawler.GetZipUrlList("http://anison.info/data/download.html")
+
+	programs, err := crawler.ExtractPrograms(zipUrlList[0]) // program.csv
+	if err != nil {
+		return err
+	}
+
+	db, err := sql.Open("sqlite3", "database.sqlite")
 	if err != nil {
 		return err
 	}
