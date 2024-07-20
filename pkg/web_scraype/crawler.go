@@ -20,7 +20,6 @@ import (
 
 func GetZipUrlList(siteURL string) []string {
 	doc, _ := goquery.NewDocument(siteURL)
-	fmt.Println(doc)
 
 	zipUrlList := []string{}
 
