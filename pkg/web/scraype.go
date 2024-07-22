@@ -1,4 +1,4 @@
-package scraype
+package web
 
 import (
 	"archive/zip"
@@ -15,7 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	model "github.com/zetton110/cmkish-cli/model"
-	csv_access "github.com/zetton110/cmkish-cli/pkg/csv_access"
+	csv "github.com/zetton110/cmkish-cli/pkg/file"
 )
 
 func GetZipUrlList(siteURL string) []string {
@@ -68,13 +68,13 @@ func ExtractPrograms(zipUrl string) ([]model.Program, error) {
 			}
 			defer f.Close()
 
-			records, err := csv_access.GetRecords(f)
+			records, err := csv.GetRecords(f)
 			if err != nil {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err
 			}
 
-			programs, err := records2Programs(records)
+			programs, err := toPrograms(records)
 			if err != nil {
 				fmt.Println("Error serialize Program:", err)
 				return nil, err
@@ -86,7 +86,7 @@ func ExtractPrograms(zipUrl string) ([]model.Program, error) {
 	return nil, errors.New("contents not found")
 }
 
-func records2Programs(records [][]string) ([]model.Program, error) {
+func toPrograms(records [][]string) ([]model.Program, error) {
 	programs := []model.Program{}
 
 	for _, record := range records {
@@ -116,4 +116,76 @@ func str2time(t string) time.Time {
 	tz, _ := time.LoadLocation("Asia/Tokyo")
 	timeJST, _ := time.ParseInLocation("2006-01-02", t, tz)
 	return timeJST
+}
+
+func ExtractAnisons(zipUrl string) ([]model.Anison, error) {
+	resp, err := http.Get(zipUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range r.File {
+		if path.Ext(file.Name) == ".csv" {
+
+			f, err := file.Open()
+			if err != nil {
+				return nil, err
+			}
+			defer f.Close()
+
+			records, err := csv.GetRecords(f)
+			if err != nil {
+				fmt.Println("Error parsing CSV:", err)
+				return nil, err
+			}
+
+			anisons, err := toAnisons(records)
+			if err != nil {
+				fmt.Println("Error serialize Program:", err)
+				return nil, err
+			}
+
+			return anisons, nil
+		}
+	}
+	return nil, errors.New("contents not found")
+}
+
+func toAnisons(records [][]string) ([]model.Anison, error) {
+	anisons := []model.Anison{}
+
+	for _, record := range records {
+
+		id, err := strconv.Atoi(record[5])
+		if err != nil {
+			return nil, err
+		}
+
+		programId, err := strconv.Atoi(record[0])
+		if err != nil {
+			return nil, err
+		}
+
+		anisons = append(anisons, model.Anison{
+			ID:             id,
+			ProgramID:      programId,
+			Category:       record[1],
+			ProgramName:    record[2],
+			OpEd:           record[3],
+			BroadcastOrder: record[4],
+			Title:          record[6],
+			Artist:         record[7],
+		})
+	}
+	return anisons, nil
 }

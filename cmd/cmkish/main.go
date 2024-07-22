@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-	action "github.com/zetton110/cmkish-cli/pkg/cmd_action"
+	action "github.com/zetton110/cmkish-cli/pkg/action"
 )
 
 func main() {

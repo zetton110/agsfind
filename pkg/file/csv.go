@@ -10,7 +10,7 @@ import (
 
 func GetRecords(f io.Reader) ([][]string, error) {
 
-	lines, err := fixLinesOutOfRFC4180(f)
+	lines, err := format2RFC4180(f)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func GetRecords(f io.Reader) ([][]string, error) {
 	return records, nil
 }
 
-func fixLinesOutOfRFC4180(f io.Reader) ([]string, error) {
+func format2RFC4180(f io.Reader) ([]string, error) {
 	fixedLines := []string{}
 	scanner := bufio.NewScanner(f)
 	isHeader := true
