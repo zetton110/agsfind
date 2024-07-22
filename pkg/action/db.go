@@ -10,45 +10,6 @@ import (
 	scraype "github.com/zetton110/cmkish-cli/pkg/web"
 )
 
-func MakeDB(c *cli.Context) error {
-
-	zipUrlList := scraype.GetZipUrlList("http://anison.info/data/download.html")
-
-	db, err := setUpDB("database.sqlite")
-	if err != nil {
-		return err
-	}
-
-	programZipUrl := zipUrlList[0]
-	anisonZipUrl := zipUrlList[1]
-
-	programs, err := scraype.ExtractPrograms(programZipUrl) // program.csv
-	if err != nil {
-		return err
-	}
-
-	for _, p := range programs {
-		err := insertProgram(db, p)
-		if err != nil {
-			return err
-		}
-	}
-
-	anisons, err := scraype.ExtractAnisons(anisonZipUrl) // anison.csv
-	if err != nil {
-		return err
-	}
-
-	for _, a := range anisons {
-		err := insertAnison(db, a)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func UpdateDB(c *cli.Context) error {
 	zipUrlList := scraype.GetZipUrlList("http://anison.info/data/download.html")
 

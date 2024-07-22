@@ -10,16 +10,11 @@ import (
 func main() {
 
 	app := cli.NewApp()
-	app.Name = "cmkish-cli"
+	app.Name = "agsfind"
 	app.Usage = ""
 	app.Version = "0.0.0"
 
 	app.Commands = []cli.Command{
-		{
-			Name:   "makedb",
-			Usage:  "",
-			Action: action.MakeDB,
-		},
 		{
 			Name:   "updatedb",
 			Usage:  "",

@@ -1,4 +1,4 @@
-# cmkish-cli
+# agsfind
 
 ## Description
 This command line tool is used to find for information on song and programs used in anime, games, and special effects(SFX).
@@ -11,7 +11,7 @@ Find the song title (of anime, game and SFX) according to conditions.
 
 #### COMMANDS:
 
-#### `cmkish song [-t TITLE][-p PROGRAM-TITLE]`
+#### `agsfind song [-t TITLE][-p PROGRAM-TITLE]`
 Find the song title (of anime, game and SFX) according to conditions.
 This command allows you to search by song title for information on the programs in which the song is used.
 
@@ -22,7 +22,7 @@ This command allows you to search by song title for information on the programs 
 | `-v, --verbose` | Find information about theme song with details. |
 | `-w, --word-regexp` | Find information about theme songs only if they exactly match the search word. |
 
-#### `cmkish program [-t TITLE][-s SONG-TITLE]`
+#### `agsfind prg [-t TITLE][-s SONG-TITLE]`
 Find the program title (of anime, game and SFX) according to conditions.
 This command allows you to search for information on a program's theme song by its name.
 
@@ -39,10 +39,7 @@ Create and Update local database.
 
 #### COMMANDS:
 
-#### `cmkish makedb`
-Create local db.
-
-#### `cmkish updatedb`
+#### `agsfind updatedb`
 Update local db to latest.
 
 ## How to develop
