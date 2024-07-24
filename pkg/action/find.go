@@ -12,6 +12,7 @@ import (
 
 func FindSongs(c *cli.Context) error {
 	title := c.String("title")
+	programTitle := c.String("program-title")
 
 	db, err := sql.Open("sqlite3", "database.sqlite")
 	if err != nil {
@@ -19,8 +20,17 @@ func FindSongs(c *cli.Context) error {
 	}
 	defer db.Close()
 
-	cmd := fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title)
-	rows, _ := db.Query(cmd)
+	var cmd string
+	if len(programTitle) > 0 {
+		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison INNER JOIN program ON anison.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle)
+	} else if len(title) > 0 {
+		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title)
+	}
+
+	rows, err := db.Query(cmd)
+	if err != nil {
+		return err
+	}
 	defer rows.Close()
 
 	var anisons []model.Anison
@@ -50,6 +60,8 @@ func FindSongs(c *cli.Context) error {
 	header := []string{"曲名", "歌手", "作品名", "備考"}
 
 	renderTable(data, header)
+
+	fmt.Printf("%d hits.\n", len(anisons))
 
 	return nil
 }

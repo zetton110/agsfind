@@ -1,2 +1,2 @@
 build:
-	go build -o ./bin/agsfind -v ./cmd/agsfind/main.go
+	go build -o ./bin/agsf -v ./cmd/agsf/main.go

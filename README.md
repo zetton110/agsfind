@@ -1,4 +1,4 @@
-# agsfind
+# agsf
 
 ## Description
 This command line tool is used to find for information on song and programs used in anime, games, and special effects(SFX).
@@ -11,7 +11,7 @@ Find the song title (of anime, game and SFX) according to conditions.
 
 #### COMMANDS:
 
-#### `agsfind s,song [-t TITLE][-p PROGRAM-TITLE][-a ARTIST-NAME]`
+#### `agsf s,song [-t TITLE][-p PROGRAM-TITLE][-a ARTIST-NAME]`
 Find the song title (of anime, game and SFX) according to conditions.
 This command allows you to search by song title for information on the programs in which the song is used.
 
@@ -21,7 +21,7 @@ This command allows you to search by song title for information on the programs 
 | `-p, --program-title` | Find information about theme song by part of the program title. |
 | `-a, --artist` | Find songs by artist name. |
 
-#### `agsfind p,program [-t TITLE][-s SONG-TITLE][-a ARTIST-NAME]`
+#### `agsf p,program [-t TITLE][-s SONG-TITLE][-a ARTIST-NAME]`
 Find the program title (of anime, game and SFX) according to conditions.
 This command allows you to search for information on a program's theme song by its name.
 
@@ -47,7 +47,7 @@ Create and Update local database.
 
 #### COMMANDS:
 
-#### `agsfind updatedb`
+#### `agsf updatedb`
 Update local db to latest.
 
 ## How to develop
