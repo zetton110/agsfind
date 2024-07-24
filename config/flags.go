@@ -5,8 +5,8 @@ import "github.com/urfave/cli/v2"
 var (
 	LogFlags = []cli.Flag{
 		&cli.StringFlag{
-			Name:    "agsfind-log-dir-path",
-			EnvVars: []string{"AGSFIND_LOG_DIR_PATH"},
+			Name:    "agsf-log-dir-path",
+			EnvVars: []string{"AGSF_LOG_DIR_PATH"},
 			Usage:   "Directory path for log files",
 		},
 	}

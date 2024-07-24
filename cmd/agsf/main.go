@@ -14,7 +14,7 @@ import (
 func main() {
 
 	app := &cli.App{
-		Name:    "agsfind",
+		Name:    "agsf",
 		Usage:   "",
 		Version: "0.0.0",
 		Flags:   config.ConcatFlags(config.LogFlags),
@@ -30,21 +30,25 @@ func main() {
 				Usage:   "Find song by title",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:     "title",
-						Aliases:  []string{"t"},
-						Usage:    "Title of the song",
-						Required: true,
+						Name:    "title",
+						Aliases: []string{"t"},
+						Usage:   "Title of the song",
+					},
+					&cli.StringFlag{
+						Name:    "program-title",
+						Aliases: []string{"p"},
+						Usage:   "Title of the program",
 					},
 				},
 				Action: action.FindSongs,
 			},
 		},
 		Before: func(c *cli.Context) error {
-			logDirPath := c.String("agsfind-log-dir-path")
+			logDirPath := c.String("agsf-log-dir-path")
 			if len(logDirPath) == 0 {
 				return nil
 			}
-			logFilePath := filepath.Join(logDirPath, "agsfind.log")
+			logFilePath := filepath.Join(logDirPath, "agsf.log")
 			logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				return fmt.Errorf("cannnot open log file: %w", err)
