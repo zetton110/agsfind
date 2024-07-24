@@ -5,7 +5,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	model "github.com/zetton110/cmkish-cli/model"
 	scraype "github.com/zetton110/cmkish-cli/pkg/web"
 )
