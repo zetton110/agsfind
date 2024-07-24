@@ -3,7 +3,9 @@ package action
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli/v2"
 	model "github.com/zetton110/cmkish-cli/model"
 )
@@ -31,13 +33,34 @@ func FindSongs(c *cli.Context) error {
 		anisons = append(anisons, a)
 	}
 
-	for _, a := range anisons {
-		fmt.Println(
-			"'"+a.Title+"'",
-			"by "+a.Artist,
-			"【"+a.ProgramName+"//"+a.OpEd+a.BroadcastOrder+"】",
-		)
+	if len(anisons) == 0 {
+		fmt.Println("Nothig is found.")
+		return nil
 	}
 
+	data := [][]string{}
+	for _, a := range anisons {
+		data = append(data, []string{
+			a.Title,
+			a.Artist,
+			a.ProgramName,
+			a.OpEd + " " + a.BroadcastOrder,
+		})
+	}
+	header := []string{"曲名", "歌手", "作品名", "備考"}
+
+	renderTable(data, header)
+
 	return nil
+}
+
+func renderTable(data [][]string, header []string) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(header)
+
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render()
+
 }
