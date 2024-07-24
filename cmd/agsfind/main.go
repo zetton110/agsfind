@@ -41,6 +41,9 @@ func main() {
 		},
 		Before: func(c *cli.Context) error {
 			logDirPath := c.String("agsfind-log-dir-path")
+			if len(logDirPath) == 0 {
+				return nil
+			}
 			logFilePath := filepath.Join(logDirPath, "agsfind.log")
 			logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
