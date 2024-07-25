@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli/v2"
@@ -13,8 +14,9 @@ import (
 func FindSongs(c *cli.Context) error {
 	title := c.String("title")
 	programTitle := c.String("program-title")
+	databasePath := c.String("agsf-db-base-path")
 
-	db, err := sql.Open("sqlite3", "database.sqlite")
+	db, err := sql.Open("sqlite3", filepath.Join(databasePath, "database.sqlite"))
 	if err != nil {
 		return err
 	}

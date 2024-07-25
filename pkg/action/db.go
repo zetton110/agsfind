@@ -2,6 +2,7 @@ package action
 
 import (
 	"database/sql"
+	"path/filepath"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -12,8 +13,9 @@ import (
 
 func UpdateDB(c *cli.Context) error {
 	zipUrlList := scraype.GetZipUrlList("http://anison.info/data/download.html")
+	databasePath := c.String("agsf-db-base-path")
 
-	db, err := setUpDB("database.sqlite")
+	db, err := setUpDB(filepath.Join(databasePath, "database.sqlite"))
 	if err != nil {
 		return err
 	}

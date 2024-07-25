@@ -17,7 +17,10 @@ func main() {
 		Name:    "agsf",
 		Usage:   "",
 		Version: "0.0.0",
-		Flags:   config.ConcatFlags(config.LogFlags),
+		Flags: config.ConcatFlags(
+			config.LogFlags,
+			config.DatabaseFlags,
+		),
 		Commands: []*cli.Command{
 			{
 				Name:   "updatedb",
