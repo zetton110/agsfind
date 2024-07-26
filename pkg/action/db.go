@@ -2,6 +2,7 @@ package action
 
 import (
 	"database/sql"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -32,13 +33,25 @@ func UpdateDB(c *cli.Context) error {
 		}
 	}
 
-	anisons, err := scraype.ExtractAnisons(zipUrlList[1]) // anison.csv
+	animeSongs, err := scraype.ExtractSongs(zipUrlList[1]) // anison.csv
 	if err != nil {
 		return err
 	}
 
-	for _, a := range anisons {
-		err := insertAnison(db, a)
+	for _, s := range animeSongs {
+		err := insertSongTo(db, s, "anison")
+		if err != nil {
+			return err
+		}
+	}
+
+	gameSongs, err := scraype.ExtractSongs(zipUrlList[3]) // game.csv
+	if err != nil {
+		return err
+	}
+
+	for _, s := range gameSongs {
+		err := insertSongTo(db, s, "game")
 		if err != nil {
 			return err
 		}
@@ -67,6 +80,18 @@ func setUpDB(dsn string) (*sql.DB, error) {
 			PRIMARY KEY(ID)
 		)`,
 		`CREATE TABLE IF NOT EXISTS anison(
+			ID INT,
+			program_id INT,
+			program_name TEXT,
+			category TEXT,
+			op_ed TEXT,
+			broadcast_order TEXT,
+			title TEXT,
+			artist TEXT,
+			FOREIGN KEY (program_id) REFERENCES program(ID),
+			PRIMARY KEY(ID, program_id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS game(
 			ID INT,
 			program_id INT,
 			program_name TEXT,
@@ -120,19 +145,20 @@ func insertProgram(db *sql.DB, p model.Program) error {
 	return nil
 }
 
-func insertAnison(db *sql.DB, a model.Anison) error {
-	_, err := db.Exec(`
-		REPLACE INTO anison(
-			ID, 
-			program_id,
-			program_name,
-			category,
-			op_ed,
-			broadcast_order,
-			title,
-			artist
-		) values(?,?,?,?,?,?,?,?)
-	`,
+func insertSongTo(db *sql.DB, a model.Song, tableName string) error {
+	_, err := db.Exec(
+		fmt.Sprintf(`
+			REPLACE INTO %s(
+				ID, 
+				program_id,
+				program_name,
+				category,
+				op_ed,
+				broadcast_order,
+				title,
+				artist
+			) values(?,?,?,?,?,?,?,?)
+	`, tableName),
 		a.ID,
 		a.ProgramID,
 		a.ProgramName,

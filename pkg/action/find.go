@@ -23,38 +23,44 @@ func FindSongs(c *cli.Context) error {
 	}
 	defer db.Close()
 
-	var cmd string
+	var queries []string
 	if len(programTitle) > 0 {
-		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison INNER JOIN program ON anison.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle)
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison INNER JOIN program ON anison.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game INNER JOIN program ON game.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
 	} else if len(title) > 0 {
-		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title)
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title))
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game where title LIKE '%%%s%%'", title))
 	} else if len(artist) > 0 {
-		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where artist LIKE '%%%s%%'", artist)
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where artist LIKE '%%%s%%'", artist))
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game where artist LIKE '%%%s%%'", artist))
 	}
 
-	rows, err := db.Query(cmd)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
+	var songs []model.Song
+	for _, q := range queries {
 
-	var anisons []model.Anison
-	for rows.Next() {
-		var a model.Anison
-		err := rows.Scan(&a.Title, &a.Artist, &a.ProgramName, &a.OpEd, &a.BroadcastOrder)
+		rows, err := db.Query(q)
 		if err != nil {
-			fmt.Errorf("failed to parse anison. %w\n", err)
+			return err
 		}
-		anisons = append(anisons, a)
+		defer rows.Close()
+
+		for rows.Next() {
+			var s model.Song
+			err := rows.Scan(&s.Title, &s.Artist, &s.ProgramName, &s.OpEd, &s.BroadcastOrder)
+			if err != nil {
+				fmt.Errorf("failed to parse anison. %w\n", err)
+			}
+			songs = append(songs, s)
+		}
 	}
 
-	if len(anisons) == 0 {
+	if len(songs) == 0 {
 		fmt.Println("Nothig is found.")
 		return nil
 	}
 
 	data := [][]string{}
-	for _, a := range anisons {
+	for _, a := range songs {
 		data = append(data, []string{
 			a.Title,
 			a.Artist,
@@ -66,7 +72,7 @@ func FindSongs(c *cli.Context) error {
 
 	renderTable(data, header)
 
-	fmt.Printf("%d hits.\n", len(anisons))
+	fmt.Printf("%d hits.\n", len(songs))
 
 	return nil
 }

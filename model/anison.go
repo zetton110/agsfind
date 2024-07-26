@@ -1,6 +1,6 @@
 package model
 
-type Anison struct {
+type Song struct {
 	ID             int
 	ProgramID      int
 	ProgramName    string

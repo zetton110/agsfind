@@ -118,7 +118,7 @@ func str2time(t string) time.Time {
 	return timeJST
 }
 
-func ExtractAnisons(zipUrl string) ([]model.Anison, error) {
+func ExtractSongs(zipUrl string) ([]model.Song, error) {
 	resp, err := http.Get(zipUrl)
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func ExtractAnisons(zipUrl string) ([]model.Anison, error) {
 				return nil, err
 			}
 
-			anisons, err := toAnisons(records)
+			anisons, err := toSongs(records)
 			if err != nil {
 				fmt.Println("Error serialize Program:", err)
 				return nil, err
@@ -161,8 +161,8 @@ func ExtractAnisons(zipUrl string) ([]model.Anison, error) {
 	return nil, errors.New("contents not found")
 }
 
-func toAnisons(records [][]string) ([]model.Anison, error) {
-	anisons := []model.Anison{}
+func toSongs(records [][]string) ([]model.Song, error) {
+	songs := []model.Song{}
 
 	for _, record := range records {
 
@@ -176,7 +176,7 @@ func toAnisons(records [][]string) ([]model.Anison, error) {
 			return nil, err
 		}
 
-		anisons = append(anisons, model.Anison{
+		songs = append(songs, model.Song{
 			ID:             id,
 			ProgramID:      programId,
 			Category:       record[1],
@@ -187,5 +187,5 @@ func toAnisons(records [][]string) ([]model.Anison, error) {
 			Artist:         record[7],
 		})
 	}
-	return anisons, nil
+	return songs, nil
 }
