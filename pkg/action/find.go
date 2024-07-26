@@ -14,6 +14,7 @@ import (
 func FindSongs(c *cli.Context) error {
 	title := c.String("title")
 	programTitle := c.String("program-title")
+	artist := c.String("artist")
 	databasePath := c.String("agsf-db-base-path")
 
 	db, err := sql.Open("sqlite3", filepath.Join(databasePath, "database.sqlite"))
@@ -27,6 +28,8 @@ func FindSongs(c *cli.Context) error {
 		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison INNER JOIN program ON anison.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle)
 	} else if len(title) > 0 {
 		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title)
+	} else if len(artist) > 0 {
+		cmd = fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where artist LIKE '%%%s%%'", artist)
 	}
 
 	rows, err := db.Query(cmd)

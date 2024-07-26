@@ -42,6 +42,11 @@ func main() {
 						Aliases: []string{"p"},
 						Usage:   "Title of the program",
 					},
+					&cli.StringFlag{
+						Name:    "artist",
+						Aliases: []string{"a"},
+						Usage:   "artist of the song",
+					},
 				},
 				Action: action.FindSongs,
 			},
