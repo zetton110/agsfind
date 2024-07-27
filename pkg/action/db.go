@@ -45,6 +45,18 @@ func UpdateDB(c *cli.Context) error {
 		}
 	}
 
+	sfSongs, err := scraype.ExtractSongs(zipUrlList[2]) // sf.csv
+	if err != nil {
+		return err
+	}
+
+	for _, s := range sfSongs {
+		err := insertSongTo(db, s, "side_effect")
+		if err != nil {
+			return err
+		}
+	}
+
 	gameSongs, err := scraype.ExtractSongs(zipUrlList[3]) // game.csv
 	if err != nil {
 		return err
@@ -92,6 +104,18 @@ func setUpDB(dsn string) (*sql.DB, error) {
 			PRIMARY KEY(ID, program_id)
 		)`,
 		`CREATE TABLE IF NOT EXISTS game(
+			ID INT,
+			program_id INT,
+			program_name TEXT,
+			category TEXT,
+			op_ed TEXT,
+			broadcast_order TEXT,
+			title TEXT,
+			artist TEXT,
+			FOREIGN KEY (program_id) REFERENCES program(ID),
+			PRIMARY KEY(ID, program_id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS side_effect(
 			ID INT,
 			program_id INT,
 			program_name TEXT,
