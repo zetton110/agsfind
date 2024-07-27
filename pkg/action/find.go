@@ -27,12 +27,15 @@ func FindSongs(c *cli.Context) error {
 	if len(programTitle) > 0 {
 		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison INNER JOIN program ON anison.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
 		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game INNER JOIN program ON game.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM side_effect INNER JOIN program ON side_effect.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
 	} else if len(title) > 0 {
 		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title))
 		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game where title LIKE '%%%s%%'", title))
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM side_effect where title LIKE '%%%s%%'", title))
 	} else if len(artist) > 0 {
 		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where artist LIKE '%%%s%%'", artist))
 		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game where artist LIKE '%%%s%%'", artist))
+		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM side_effect where artist LIKE '%%%s%%'", artist))
 	}
 
 	var songs []model.Song
