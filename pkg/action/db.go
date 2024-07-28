@@ -26,23 +26,9 @@ func UpdateDB(c *cli.Context) error {
 		return err
 	}
 
-	for _, p := range programs {
-		err := insertProgram(db, p)
-		if err != nil {
-			return err
-		}
-	}
-
 	animeSongs, err := scraype.ExtractSongs(zipUrlList[1]) // anison.csv
 	if err != nil {
 		return err
-	}
-
-	for _, s := range animeSongs {
-		err := insertSongTo(db, s, "anison")
-		if err != nil {
-			return err
-		}
 	}
 
 	sfSongs, err := scraype.ExtractSongs(zipUrlList[2]) // sf.csv
@@ -50,24 +36,44 @@ func UpdateDB(c *cli.Context) error {
 		return err
 	}
 
-	for _, s := range sfSongs {
-		err := insertSongTo(db, s, "side_effect")
-		if err != nil {
-			return err
-		}
-	}
-
 	gameSongs, err := scraype.ExtractSongs(zipUrlList[3]) // game.csv
 	if err != nil {
 		return err
 	}
 
-	for _, s := range gameSongs {
-		err := insertSongTo(db, s, "game")
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	for _, p := range programs {
+		err := insertProgram(tx, p)
 		if err != nil {
 			return err
 		}
 	}
+
+	for _, s := range animeSongs {
+		err := insertSongTo(tx, s, "anison")
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, s := range sfSongs {
+		err := insertSongTo(tx, s, "side_effect")
+		if err != nil {
+			return err
+		}
+	}
+	for _, s := range gameSongs {
+		err := insertSongTo(tx, s, "game")
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
 
 	return nil
 }
@@ -137,8 +143,13 @@ func setUpDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func insertProgram(db *sql.DB, p model.Program) error {
-	_, err := db.Exec(`
+func insertProgram(tx *sql.Tx, p model.Program) error {
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+	_, err := tx.Exec(`
 		REPLACE INTO program(
 			ID, 
 			category,
@@ -169,8 +180,13 @@ func insertProgram(db *sql.DB, p model.Program) error {
 	return nil
 }
 
-func insertSongTo(db *sql.DB, a model.Song, tableName string) error {
-	_, err := db.Exec(
+func insertSongTo(tx *sql.Tx, a model.Song, tableName string) error {
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+	_, err := tx.Exec(
 		fmt.Sprintf(`
 			REPLACE INTO %s(
 				ID, 
