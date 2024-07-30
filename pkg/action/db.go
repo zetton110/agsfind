@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/urfave/cli/v2"
 	model "github.com/zetton110/cmkish-cli/model"
@@ -41,39 +42,51 @@ func UpdateDB(c *cli.Context) error {
 		return err
 	}
 
+	count := len(programs) + len(animeSongs) + len(sfSongs) + len(gameSongs)
+	bar := pb.StartNew(count)
+
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 
 	for _, p := range programs {
+		bar.Increment()
 		err := insertProgram(tx, p)
 		if err != nil {
 			return err
 		}
+		time.Sleep(100 * time.Nanosecond)
 	}
 
 	for _, s := range animeSongs {
+		bar.Increment()
 		err := insertSongTo(tx, s, "anison")
 		if err != nil {
 			return err
 		}
+		time.Sleep(100 * time.Nanosecond)
 	}
 
 	for _, s := range sfSongs {
+		bar.Increment()
 		err := insertSongTo(tx, s, "side_effect")
 		if err != nil {
 			return err
 		}
+		time.Sleep(100 * time.Nanosecond)
 	}
 	for _, s := range gameSongs {
+		bar.Increment()
 		err := insertSongTo(tx, s, "game")
 		if err != nil {
 			return err
 		}
+		time.Sleep(100 * time.Nanosecond)
 	}
 
 	tx.Commit()
+	bar.Finish()
 
 	return nil
 }
