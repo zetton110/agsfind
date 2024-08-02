@@ -14,9 +14,16 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	csv "github.com/zetton110/cmkish-cli/file"
 	model "github.com/zetton110/cmkish-cli/model"
-	csv "github.com/zetton110/cmkish-cli/pkg/file"
 )
+
+type Results struct {
+	Programs []model.Program
+	Anisons  []model.Song
+	SFs      []model.Song
+	Games    []model.Song
+}
 
 func GetZipUrlList(siteURL string) []string {
 	doc, _ := goquery.NewDocument(siteURL)
@@ -43,7 +50,40 @@ func getZipUrl(siteURL, zipFilePath string) string {
 	return u.String()
 }
 
-func ExtractPrograms(zipUrl string) ([]model.Program, error) {
+func Extract(targetUrlMap map[string]string) (Results, error) {
+	r := Results{}
+	for k, v := range targetUrlMap {
+		switch k {
+		case "program":
+			p, err := extractPrograms(v)
+			if err != nil {
+				return r, err
+			}
+			r.Programs = append(r.Programs, p...)
+		case "anison":
+			s, err := extractSongs(v)
+			if err != nil {
+				return r, err
+			}
+			r.Anisons = append(r.Anisons, s...)
+		case "sf":
+			s, err := extractSongs(v)
+			if err != nil {
+				return r, err
+			}
+			r.SFs = append(r.SFs, s...)
+		case "game":
+			s, err := extractSongs(v)
+			if err != nil {
+				return r, err
+			}
+			r.Games = append(r.Games, s...)
+		}
+	}
+	return r, nil
+}
+
+func extractPrograms(zipUrl string) ([]model.Program, error) {
 	resp, err := http.Get(zipUrl)
 	if err != nil {
 		return nil, err
@@ -118,7 +158,7 @@ func str2time(t string) time.Time {
 	return timeJST
 }
 
-func ExtractSongs(zipUrl string) ([]model.Song, error) {
+func extractSongs(zipUrl string) ([]model.Song, error) {
 	resp, err := http.Get(zipUrl)
 	if err != nil {
 		return nil, err

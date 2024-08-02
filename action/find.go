@@ -4,20 +4,25 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
 	model "github.com/zetton110/cmkish-cli/model"
 )
 
-func FindSongs(c *cli.Context) error {
-	title := c.String("title")
-	programTitle := c.String("program-title")
-	artist := c.String("artist")
-	databasePath := c.String("agsf-db-base-path")
+type FindSong struct {
+	Title        string
+	ProgramTitle string
+	Artist       string
+	DatabasePath string
+}
 
-	db, err := sql.Open("sqlite3", filepath.Join(databasePath, "database.sqlite"))
+func (f *FindSong) Run() error {
+	title := f.Title
+	programTitle := f.ProgramTitle
+	artist := f.Artist
+	databasePath := f.DatabasePath
+
+	db, err := sql.Open("sqlite3", databasePath)
 	if err != nil {
 		return err
 	}

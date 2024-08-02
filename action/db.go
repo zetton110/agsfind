@@ -3,46 +3,40 @@ package action
 import (
 	"database/sql"
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/cheggaaa/pb/v3"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/urfave/cli/v2"
 	model "github.com/zetton110/cmkish-cli/model"
-	scraype "github.com/zetton110/cmkish-cli/pkg/web"
+	scraype "github.com/zetton110/cmkish-cli/web"
 )
 
-func UpdateDB(c *cli.Context) error {
+type UpdateDB struct {
+	DatabasePath string
+}
+
+func (u *UpdateDB) Run() error {
+
+	db, err := setUpDB(u.DatabasePath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	zipUrlList := scraype.GetZipUrlList("http://anison.info/data/download.html")
-	databasePath := c.String("agsf-db-base-path")
+	m := map[string]string{
+		"program": zipUrlList[0],
+		"anison":  zipUrlList[1],
+		"sf":      zipUrlList[2],
+		"game":    zipUrlList[3],
+	}
 
-	db, err := setUpDB(filepath.Join(databasePath, "database.sqlite"))
+	r, err := scraype.Extract(m)
 	if err != nil {
 		return err
 	}
 
-	programs, err := scraype.ExtractPrograms(zipUrlList[0]) // program.csv
-	if err != nil {
-		return err
-	}
-
-	animeSongs, err := scraype.ExtractSongs(zipUrlList[1]) // anison.csv
-	if err != nil {
-		return err
-	}
-
-	sfSongs, err := scraype.ExtractSongs(zipUrlList[2]) // sf.csv
-	if err != nil {
-		return err
-	}
-
-	gameSongs, err := scraype.ExtractSongs(zipUrlList[3]) // game.csv
-	if err != nil {
-		return err
-	}
-
-	count := len(programs) + len(animeSongs) + len(sfSongs) + len(gameSongs)
+	count := len(r.Programs) + len(r.Anisons) + len(r.SFs) + len(r.Games)
 	bar := pb.StartNew(count)
 
 	tx, err := db.Begin()
@@ -50,7 +44,7 @@ func UpdateDB(c *cli.Context) error {
 		return err
 	}
 
-	for _, p := range programs {
+	for _, p := range r.Programs {
 		bar.Increment()
 		err := insertProgram(tx, p)
 		if err != nil {
@@ -59,7 +53,7 @@ func UpdateDB(c *cli.Context) error {
 		time.Sleep(100 * time.Nanosecond)
 	}
 
-	for _, s := range animeSongs {
+	for _, s := range r.Anisons {
 		bar.Increment()
 		err := insertSongTo(tx, s, "anison")
 		if err != nil {
@@ -68,7 +62,7 @@ func UpdateDB(c *cli.Context) error {
 		time.Sleep(100 * time.Nanosecond)
 	}
 
-	for _, s := range sfSongs {
+	for _, s := range r.SFs {
 		bar.Increment()
 		err := insertSongTo(tx, s, "side_effect")
 		if err != nil {
@@ -76,7 +70,7 @@ func UpdateDB(c *cli.Context) error {
 		}
 		time.Sleep(100 * time.Nanosecond)
 	}
-	for _, s := range gameSongs {
+	for _, s := range r.Games {
 		bar.Increment()
 		err := insertSongTo(tx, s, "game")
 		if err != nil {
