@@ -9,23 +9,54 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	csv "github.com/zetton110/cmkish-cli/file"
 	model "github.com/zetton110/cmkish-cli/model"
 )
 
-type Results struct {
+type ExtractedData struct {
 	Programs []model.Program
 	Anisons  []model.Song
 	SFs      []model.Song
 	Games    []model.Song
 }
 
-func GetZipUrlList(siteURL string) []string {
+func (e *ExtractedData) Count() int {
+	return len(e.Programs) + len(e.Anisons) + len(e.SFs) + len(e.Games)
+}
+
+func GetData(siteURL string) (*ExtractedData, error) {
+	zipUrls := getZipUrls(siteURL)
+	if len(zipUrls) != 4 {
+		return nil, errors.New("zip urls not found")
+	}
+
+	programUrl := zipUrls[0]
+	anisonUrl := zipUrls[1]
+	sfUrl := zipUrls[2]
+	gameUrl := zipUrls[3]
+
+	programs, err := extractPrograms(programUrl)
+	anisons, err := extractSongs(anisonUrl)
+	sfs, err := extractSongs(sfUrl)
+	games, err := extractSongs(gameUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExtractedData{
+		Programs: programs,
+		Anisons:  anisons,
+		SFs:      sfs,
+		Games:    games,
+	}, nil
+
+}
+
+func getZipUrls(siteURL string) []string {
 	doc, _ := goquery.NewDocument(siteURL)
 
 	zipUrlList := []string{}
@@ -48,39 +79,6 @@ func getZipUrl(siteURL, zipFilePath string) string {
 	}
 	u.Path = path.Join(path.Dir(u.Path), zipFilePath)
 	return u.String()
-}
-
-func Extract(targetUrlMap map[string]string) (Results, error) {
-	r := Results{}
-	for k, v := range targetUrlMap {
-		switch k {
-		case "program":
-			p, err := extractPrograms(v)
-			if err != nil {
-				return r, err
-			}
-			r.Programs = append(r.Programs, p...)
-		case "anison":
-			s, err := extractSongs(v)
-			if err != nil {
-				return r, err
-			}
-			r.Anisons = append(r.Anisons, s...)
-		case "sf":
-			s, err := extractSongs(v)
-			if err != nil {
-				return r, err
-			}
-			r.SFs = append(r.SFs, s...)
-		case "game":
-			s, err := extractSongs(v)
-			if err != nil {
-				return r, err
-			}
-			r.Games = append(r.Games, s...)
-		}
-	}
-	return r, nil
 }
 
 func extractPrograms(zipUrl string) ([]model.Program, error) {
@@ -113,49 +111,10 @@ func extractPrograms(zipUrl string) ([]model.Program, error) {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err
 			}
-
-			programs, err := toPrograms(records)
-			if err != nil {
-				fmt.Println("Error serialize Program:", err)
-				return nil, err
-			}
-
-			return programs, nil
+			return model.Records2Programs(records)
 		}
 	}
 	return nil, errors.New("contents not found")
-}
-
-func toPrograms(records [][]string) ([]model.Program, error) {
-	programs := []model.Program{}
-
-	for _, record := range records {
-
-		id, err := strconv.Atoi(record[0])
-		if err != nil {
-			return nil, err
-		}
-
-		programs = append(programs, model.Program{
-			ID:           id,
-			Category:     record[1],
-			GameType:     record[2],
-			Name:         record[3],
-			NameRuby:     record[4],
-			NameSub:      record[5],
-			NameSubRuby:  record[6],
-			EpisodeCount: record[7],
-			AgeLimit:     record[8],
-			StartDate:    str2time(record[9]),
-		})
-	}
-	return programs, nil
-}
-
-func str2time(t string) time.Time {
-	tz, _ := time.LoadLocation("Asia/Tokyo")
-	timeJST, _ := time.ParseInLocation("2006-01-02", t, tz)
-	return timeJST
 }
 
 func extractSongs(zipUrl string) ([]model.Song, error) {
@@ -188,44 +147,8 @@ func extractSongs(zipUrl string) ([]model.Song, error) {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err
 			}
-
-			anisons, err := toSongs(records)
-			if err != nil {
-				fmt.Println("Error serialize Program:", err)
-				return nil, err
-			}
-
-			return anisons, nil
+			return model.Records2Songs(records)
 		}
 	}
 	return nil, errors.New("contents not found")
-}
-
-func toSongs(records [][]string) ([]model.Song, error) {
-	songs := []model.Song{}
-
-	for _, record := range records {
-
-		id, err := strconv.Atoi(record[5])
-		if err != nil {
-			return nil, err
-		}
-
-		programId, err := strconv.Atoi(record[0])
-		if err != nil {
-			return nil, err
-		}
-
-		songs = append(songs, model.Song{
-			ID:             id,
-			ProgramID:      programId,
-			Category:       record[1],
-			ProgramName:    record[2],
-			OpEd:           record[3],
-			BroadcastOrder: record[4],
-			Title:          record[6],
-			Artist:         record[7],
-		})
-	}
-	return songs, nil
 }

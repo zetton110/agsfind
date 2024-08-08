@@ -2,7 +2,6 @@ package action
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/cheggaaa/pb/v3"
@@ -23,28 +22,19 @@ func (u *UpdateDB) Run() error {
 	}
 	defer db.Close()
 
-	zipUrlList := scraype.GetZipUrlList("http://anison.info/data/download.html")
-	m := map[string]string{
-		"program": zipUrlList[0],
-		"anison":  zipUrlList[1],
-		"sf":      zipUrlList[2],
-		"game":    zipUrlList[3],
-	}
-
-	r, err := scraype.Extract(m)
+	data, err := scraype.GetData("http://anison.info/data/download.html")
 	if err != nil {
 		return err
 	}
 
-	count := len(r.Programs) + len(r.Anisons) + len(r.SFs) + len(r.Games)
-	bar := pb.StartNew(count)
+	bar := pb.StartNew(data.Count())
 
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 
-	for _, p := range r.Programs {
+	for _, p := range data.Programs {
 		bar.Increment()
 		err := insertProgram(tx, p)
 		if err != nil {
@@ -53,26 +43,26 @@ func (u *UpdateDB) Run() error {
 		time.Sleep(100 * time.Nanosecond)
 	}
 
-	for _, s := range r.Anisons {
+	for _, s := range data.Anisons {
 		bar.Increment()
-		err := insertSongTo(tx, s, "anison")
+		err := insertAnison(tx, s)
 		if err != nil {
 			return err
 		}
 		time.Sleep(100 * time.Nanosecond)
 	}
 
-	for _, s := range r.SFs {
+	for _, s := range data.SFs {
 		bar.Increment()
-		err := insertSongTo(tx, s, "side_effect")
+		err := insertSideEffect(tx, s)
 		if err != nil {
 			return err
 		}
 		time.Sleep(100 * time.Nanosecond)
 	}
-	for _, s := range r.Games {
+	for _, s := range data.Games {
 		bar.Increment()
-		err := insertSongTo(tx, s, "game")
+		err := insertGame(tx, s)
 		if err != nil {
 			return err
 		}
@@ -187,33 +177,95 @@ func insertProgram(tx *sql.Tx, p model.Program) error {
 	return nil
 }
 
-func insertSongTo(tx *sql.Tx, a model.Song, tableName string) error {
+func insertAnison(tx *sql.Tx, s model.Song) error {
 	defer func() {
 		if err := recover(); err != nil {
 			tx.Rollback()
 		}
 	}()
 	_, err := tx.Exec(
-		fmt.Sprintf(`
-			REPLACE INTO %s(
-				ID, 
-				program_id,
-				program_name,
-				category,
-				op_ed,
-				broadcast_order,
-				title,
-				artist
-			) values(?,?,?,?,?,?,?,?)
-	`, tableName),
-		a.ID,
-		a.ProgramID,
-		a.ProgramName,
-		a.Category,
-		a.OpEd,
-		a.BroadcastOrder,
-		a.Title,
-		a.Artist,
+		`REPLACE INTO anison(
+			ID, 
+			program_id,
+			program_name,
+			category,
+			op_ed,
+			broadcast_order,
+			title,
+			artist
+		) values(?,?,?,?,?,?,?,?)`,
+		s.ID,
+		s.ProgramID,
+		s.ProgramName,
+		s.Category,
+		s.OpEd,
+		s.BroadcastOrder,
+		s.Title,
+		s.Artist,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func insertGame(tx *sql.Tx, s model.Song) error {
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+	_, err := tx.Exec(
+		`REPLACE INTO game(
+			ID, 
+			program_id,
+			program_name,
+			category,
+			op_ed,
+			broadcast_order,
+			title,
+			artist
+		) values(?,?,?,?,?,?,?,?)`,
+		s.ID,
+		s.ProgramID,
+		s.ProgramName,
+		s.Category,
+		s.OpEd,
+		s.BroadcastOrder,
+		s.Title,
+		s.Artist,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func insertSideEffect(tx *sql.Tx, s model.Song) error {
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+	_, err := tx.Exec(
+		`REPLACE INTO side_effect(
+			ID, 
+			program_id,
+			program_name,
+			category,
+			op_ed,
+			broadcast_order,
+			title,
+			artist
+		) values(?,?,?,?,?,?,?,?)`,
+		s.ID,
+		s.ProgramID,
+		s.ProgramName,
+		s.Category,
+		s.OpEd,
+		s.BroadcastOrder,
+		s.Title,
+		s.Artist,
 	)
 	if err != nil {
 		return err
