@@ -84,8 +84,8 @@ func (f *FindSong) Run() error {
 
 func buildQuery(table string, title string, programTitle string, artist string, conditons map[string]bool) string {
 	condition := ""
-	join := ""
-	order := ""
+	join := fmt.Sprintf("INNER JOIN program ON %s.program_id = program.ID", table)
+	order := "ORDER BY program.start_date ASC"
 	for k, v := range conditons {
 		if v {
 			if condition != "" {
@@ -96,8 +96,6 @@ func buildQuery(table string, title string, programTitle string, artist string, 
 				condition += fmt.Sprintf("title LIKE '%%%s%%'", title)
 			case "findByProgramTitle":
 				condition += fmt.Sprintf("program_name LIKE '%%%s%%'", programTitle)
-				join = fmt.Sprintf("INNER JOIN program ON %s.program_id = program.ID", table)
-				order = "ORDER BY program.start_date ASC"
 			case "findByArtist":
 				condition += fmt.Sprintf("artist LIKE '%%%s%%'", artist)
 			}
