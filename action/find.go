@@ -28,19 +28,16 @@ func (f *FindSong) Run() error {
 	}
 	defer db.Close()
 
-	var queries []string
-	if len(programTitle) > 0 {
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison INNER JOIN program ON anison.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game INNER JOIN program ON game.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM side_effect INNER JOIN program ON side_effect.program_id = program.ID where program.name LIKE '%%%s%%' ORDER BY program.start_date ASC", programTitle))
-	} else if len(title) > 0 {
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where title LIKE '%%%s%%'", title))
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game where title LIKE '%%%s%%'", title))
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM side_effect where title LIKE '%%%s%%'", title))
-	} else if len(artist) > 0 {
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM anison where artist LIKE '%%%s%%'", artist))
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM game where artist LIKE '%%%s%%'", artist))
-		queries = append(queries, fmt.Sprintf("SELECT title, artist, program_name, op_ed, broadcast_order FROM side_effect where artist LIKE '%%%s%%'", artist))
+	conditions := map[string]bool{
+		"findByTitle":        len(title) > 0,
+		"findByProgramTitle": len(programTitle) > 0,
+		"findByArtist":       len(artist) > 0,
+	}
+
+	queries := []string{
+		buildQuery("anison", title, programTitle, artist, conditions),
+		buildQuery("game", title, programTitle, artist, conditions),
+		buildQuery("side_effect", title, programTitle, artist, conditions),
 	}
 
 	var songs []model.Song
@@ -83,6 +80,35 @@ func (f *FindSong) Run() error {
 	fmt.Printf("%d hits.\n", len(songs))
 
 	return nil
+}
+
+func buildQuery(table string, title string, programTitle string, artist string, conditons map[string]bool) string {
+	condition := ""
+	join := ""
+	order := ""
+	for k, v := range conditons {
+		if v {
+			if condition != "" {
+				condition += " AND "
+			}
+			switch k {
+			case "findByTitle":
+				condition += fmt.Sprintf("title LIKE '%%%s%%'", title)
+			case "findByProgramTitle":
+				condition += fmt.Sprintf("program_name LIKE '%%%s%%'", programTitle)
+				join = fmt.Sprintf("INNER JOIN program ON %s.program_id = program.ID", table)
+				order = "ORDER BY program.start_date ASC"
+			case "findByArtist":
+				condition += fmt.Sprintf("artist LIKE '%%%s%%'", artist)
+			}
+		}
+	}
+	return getQuery(table, join, condition, order)
+}
+
+func getQuery(table, join, condition, order string) string {
+	TARGET_COLUMNS := "title, artist, program_name, op_ed, broadcast_order"
+	return fmt.Sprintf("SELECT %s FROM %s %s where %s %s", TARGET_COLUMNS, table, join, condition, order)
 }
 
 func renderTable(data [][]string, header []string) {
