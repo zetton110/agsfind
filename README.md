@@ -11,25 +11,25 @@ Find the song title (of anime, game and SFX) according to conditions.
 
 #### COMMANDS:
 
-#### `agsf s,song [-t TITLE][-p PROGRAM-TITLE][-a ARTIST-NAME]`
+#### `agsf s,song [-n <SONG-NAME>][-x <PROGRAM-NAME>][-s <SINGER-NAME>]`
 Find the song title (of anime, game and SFX) according to conditions.
 This command allows you to search by song title for information on the programs in which the song is used.
 
 | OPTION | DESCRIPTION |
 | ---- | ---- |
-| `-t, --title` | Find information about songs by part of its title. (default) |
-| `-p, --program-title` | Find information about theme song by part of the program title. |
-| `-a, --artist` | Find songs by artist name. |
+| `-n, --name` | Find information about songs by part of its title. (default) |
+| `-x, --xlookup-by-program-name` | Find information about theme song by part of the program title. |
+| `-s, --singer-name` | Find songs by artist name. |
 
-#### `agsf p,program [-t TITLE][-s SONG-TITLE][-a ARTIST-NAME]`
+#### `agsf p,program [-n <PROGRAM-NAME>][-x <SONG-NAME>][-s <SINGER-NAME>]`
 Find the program title (of anime, game and SFX) according to conditions.
 This command allows you to search for information on a program's theme song by its name.
 
 | OPTION | DESCRIPTION |
 | ---- | ---- |
-| `-t, --title` | Find information about programs by part of those title. (default) |
-| `-s, --find-by-song-title` | Find information about the programs whose song title is the theme song. |
-| `-a, --artist` | Find programs by artist name. |
+| `-n, --name` | Find information about programs by part of those title. (default) |
+| `-x, --xlookup-by-theme-song-name` | Find information about the programs whose song title is the theme song. |
+| `-s, --singer-name-of-program-theme-song` | Find programs by artist name. |
 
 #### Common Options
 
@@ -37,9 +37,9 @@ This command allows you to search for information on a program's theme song by i
 | ---- | ---- |
 | `-v, --verbose` | Find information about the programs with details. |
 | `-w, --word-regexp` | Find information about programs only if they exactly match the search word. |
-| `-o, --output-format` FORMAT | Specify output format. `-o CSV` `-o JSON` |
-| `-c, --category` CATEGORY| Specify the category to find. `-c anime` `-c game` `-c sf` |
-| `-from` YYYY-MM-DD <br> `-to` YYYY-MM-DD | Specify the period of program started to search. `-from 2024-07-01 -to 2024-09-30` |
+| `-o, --output-with-format <FORMAT>` | Specify output format. `-o CSV` `-o JSON` |
+| `-c, --category <CATEGORY>` | Specify the category to find. `-c anime` `-c game` `-c sf` |
+| `-from <YYYY-MM-DD>` <br> `-to <YYYY-MM-DD>` | Specify the period of program started to search. `-from 2024-07-01 -to 2024-09-30` |
 
 ### Manipulate local database
 
