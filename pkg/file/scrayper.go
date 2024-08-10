@@ -1,4 +1,4 @@
-package web
+package file
 
 import (
 	"archive/zip"
@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	csv "github.com/zetton110/cmkish-cli/file"
 	model "github.com/zetton110/cmkish-cli/model"
 )
 
@@ -106,7 +105,7 @@ func extractPrograms(zipUrl string) ([]model.Program, error) {
 			}
 			defer f.Close()
 
-			records, err := csv.GetRecords(f)
+			records, err := CSV2Records(f)
 			if err != nil {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err
@@ -142,7 +141,7 @@ func extractSongs(zipUrl string) ([]model.Song, error) {
 			}
 			defer f.Close()
 
-			records, err := csv.GetRecords(f)
+			records, err := CSV2Records(f)
 			if err != nil {
 				fmt.Println("Error parsing CSV:", err)
 				return nil, err

@@ -1,4 +1,4 @@
-package csv_access
+package file
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func GetRecords(f io.Reader) ([][]string, error) {
+func CSV2Records(f io.Reader) ([][]string, error) {
 
 	lines, err := format2RFC4180(f)
 	if err != nil {

@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"fmt"
@@ -7,12 +7,11 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli/v2"
-	action "github.com/zetton110/cmkish-cli/action"
-	"github.com/zetton110/cmkish-cli/config"
+	"github.com/zetton110/cmkish-cli/action"
+	"github.com/zetton110/cmkish-cli/pkg/config"
 )
 
-func main() {
-
+func NewCliApp() *cli.App {
 	app := &cli.App{
 		Name:    "agsf",
 		Usage:   "",
@@ -67,11 +66,7 @@ func main() {
 			Action: findSongs,
 		},
 	}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return app
 }
 
 func findSongs(c *cli.Context) error {

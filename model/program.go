@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	util "github.com/zetton110/cmkish-cli/util"
+	util "github.com/zetton110/cmkish-cli/pkg/util"
 )
 
 type Program struct {

@@ -7,7 +7,7 @@ import (
 	"github.com/cheggaaa/pb/v3"
 	_ "github.com/mattn/go-sqlite3"
 	model "github.com/zetton110/cmkish-cli/model"
-	scraype "github.com/zetton110/cmkish-cli/web"
+	scraper "github.com/zetton110/cmkish-cli/pkg/file"
 )
 
 type UpdateDB struct {
@@ -22,7 +22,7 @@ func (u *UpdateDB) Run() error {
 	}
 	defer db.Close()
 
-	data, err := scraype.GetData("http://anison.info/data/download.html")
+	data, err := scraper.GetData("http://anison.info/data/download.html")
 	if err != nil {
 		return err
 	}
