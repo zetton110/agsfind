@@ -17,9 +17,9 @@ This command allows you to search by song title for information on the programs 
 
 | OPTION | DESCRIPTION |
 | ---- | ---- |
-| `-n, --name` | Find information about songs by part of its title. (default) |
-| `-x, --xlookup-by-program-name` | Find information about theme song by part of the program title. |
-| `-s, --singer-name` | Find songs by artist name. |
+| `-n, --name` | Find information about songs by part of its name. (default) |
+| `-x, --xlookup-by-program` | Find information about theme song by part of the program name. |
+| `-s, --singer` | Find songs by singer name. |
 
 #### `agsf p,program [-n <PROGRAM-NAME>][-x <SONG-NAME>][-s <SINGER-NAME>]`
 Find the program title (of anime, game and SFX) according to conditions.
@@ -27,9 +27,9 @@ This command allows you to search for information on a program's theme song by i
 
 | OPTION | DESCRIPTION |
 | ---- | ---- |
-| `-n, --name` | Find information about programs by part of those title. (default) |
-| `-x, --xlookup-by-theme-song-name` | Find information about the programs whose song title is the theme song. |
-| `-s, --singer-name-of-program-theme-song` | Find programs by artist name. |
+| `-n, --name` | Find information about programs by part of those name. (default) |
+| `-x, --xlookup-by-theme-song` | Find information about the programs whose song name is the theme song. |
+| `-s, --singer-of-theme-song` | Find programs by artist name. |
 
 #### Common Options
 

@@ -48,19 +48,19 @@ func NewCliApp() *cli.App {
 			Usage:   "Find song by title",
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name:    "title",
-					Aliases: []string{"t"},
-					Usage:   "Title of the song",
+					Name:    "name",
+					Aliases: []string{"n"},
+					Usage:   "Find information about songs by part of its name.",
 				},
 				&cli.StringFlag{
-					Name:    "program-title",
-					Aliases: []string{"p"},
-					Usage:   "Title of the program",
+					Name:    "xlookup-by-program",
+					Aliases: []string{"x"},
+					Usage:   "Find information about theme song by part of the program name.",
 				},
 				&cli.StringFlag{
-					Name:    "artist",
-					Aliases: []string{"a"},
-					Usage:   "artist of the song",
+					Name:    "singer",
+					Aliases: []string{"s"},
+					Usage:   "Find songs by artist name.",
 				},
 			},
 			Action: findSongs,
@@ -70,9 +70,9 @@ func NewCliApp() *cli.App {
 }
 
 func findSongs(c *cli.Context) error {
-	title := c.String("title")
-	programTitle := c.String("program-title")
-	artist := c.String("artist")
+	title := c.String("name")
+	programTitle := c.String("xlookup-by-program")
+	artist := c.String("singer")
 	databasePath := filepath.Join(c.String("agsf-db-base-path"), "database.sqlite")
 
 	a := &action.FindSong{
