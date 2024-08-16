@@ -13,6 +13,11 @@ type Song struct {
 	Artist         string
 }
 
+type SongFindResult struct {
+	Song
+	Program Program
+}
+
 func Records2Songs(records [][]string) ([]Song, error) {
 	songs := []Song{}
 

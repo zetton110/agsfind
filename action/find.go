@@ -7,6 +7,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	model "github.com/zetton110/cmkish-cli/model"
+	"github.com/zetton110/cmkish-cli/pkg/util"
 )
 
 type FindSong struct {
@@ -14,6 +15,7 @@ type FindSong struct {
 	ProgramTitle string
 	Artist       string
 	DatabasePath string
+	Verbose      bool
 }
 
 func (f *FindSong) Run() error {
@@ -21,6 +23,7 @@ func (f *FindSong) Run() error {
 	programTitle := f.ProgramTitle
 	artist := f.Artist
 	databasePath := f.DatabasePath
+	verbose := f.Verbose
 
 	db, err := sql.Open("sqlite3", databasePath)
 	if err != nil {
@@ -40,7 +43,7 @@ func (f *FindSong) Run() error {
 		buildQuery("side_effect", title, programTitle, artist, conditions),
 	}
 
-	var songs []model.Song
+	var songs []model.SongFindResult
 	for _, q := range queries {
 
 		rows, err := db.Query(q)
@@ -50,11 +53,19 @@ func (f *FindSong) Run() error {
 		defer rows.Close()
 
 		for rows.Next() {
-			var s model.Song
-			err := rows.Scan(&s.Title, &s.Artist, &s.ProgramName, &s.OpEd, &s.BroadcastOrder)
+			var s model.SongFindResult
+			var startDateStr string
+			err := rows.Scan(
+				&s.Title,
+				&s.Artist,
+				&s.ProgramName,
+				&s.OpEd,
+				&s.BroadcastOrder,
+				&startDateStr)
 			if err != nil {
-				fmt.Errorf("failed to parse anison. %w\n", err)
+				fmt.Errorf("failed to parse song. %w\n", err)
 			}
+			s.Program.StartDate = util.Str2timeWithTime(startDateStr)
 			songs = append(songs, s)
 		}
 	}
@@ -66,14 +77,22 @@ func (f *FindSong) Run() error {
 
 	data := [][]string{}
 	for _, a := range songs {
-		data = append(data, []string{
+		rec := []string{
 			a.Title,
 			a.Artist,
 			a.ProgramName,
 			a.OpEd + " " + a.BroadcastOrder,
-		})
+		}
+		if verbose {
+			rec = append(rec, a.Program.StartDate.Format("2006-01-02"))
+		}
+		data = append(data, rec)
+
 	}
 	header := []string{"曲名", "歌手", "作品名", "備考"}
+	if verbose {
+		header = append(header, "放送日")
+	}
 
 	renderTable(data, header)
 
@@ -86,6 +105,7 @@ func buildQuery(table string, title string, programTitle string, artist string, 
 	condition := ""
 	join := fmt.Sprintf("INNER JOIN program ON %s.program_id = program.ID", table)
 	order := "ORDER BY program.start_date ASC"
+	columns := "title, artist, program_name, op_ed, broadcast_order, program.start_date"
 	for k, v := range conditons {
 		if v {
 			if condition != "" {
@@ -101,12 +121,14 @@ func buildQuery(table string, title string, programTitle string, artist string, 
 			}
 		}
 	}
-	return getQuery(table, join, condition, order)
-}
-
-func getQuery(table, join, condition, order string) string {
-	TARGET_COLUMNS := "title, artist, program_name, op_ed, broadcast_order"
-	return fmt.Sprintf("SELECT %s FROM %s %s where %s %s", TARGET_COLUMNS, table, join, condition, order)
+	return fmt.Sprintf(
+		"SELECT %s FROM %s %s where %s %s",
+		columns,
+		table,
+		join,
+		condition,
+		order,
+	)
 }
 
 func renderTable(data [][]string, header []string) {
