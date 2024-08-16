@@ -62,6 +62,12 @@ func NewCliApp() *cli.App {
 					Aliases: []string{"s"},
 					Usage:   "Find songs by artist name.",
 				},
+				&cli.BoolFlag{
+					Name:    "verbose",
+					Aliases: []string{"v"},
+					Value:   false,
+					Usage:   "Find information about the programs with details.",
+				},
 			},
 			Action: findSongs,
 		},
@@ -74,12 +80,14 @@ func findSongs(c *cli.Context) error {
 	programTitle := c.String("xlookup-by-program")
 	artist := c.String("singer")
 	databasePath := filepath.Join(c.String("agsf-db-base-path"), "database.sqlite")
+	verbose := c.Bool("verbose")
 
 	a := &action.FindSong{
 		Title:        title,
 		ProgramTitle: programTitle,
 		Artist:       artist,
 		DatabasePath: databasePath,
+		Verbose:      verbose,
 	}
 	return a.Run()
 }
