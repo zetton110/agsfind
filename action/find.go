@@ -16,6 +16,7 @@ type FindSong struct {
 	Artist       string
 	DatabasePath string
 	Verbose      bool
+	WordRegexp   bool
 }
 
 func (f *FindSong) Run() error {
@@ -24,6 +25,7 @@ func (f *FindSong) Run() error {
 	artist := f.Artist
 	databasePath := f.DatabasePath
 	verbose := f.Verbose
+	wordRegexp := f.WordRegexp
 
 	db, err := sql.Open("sqlite3", databasePath)
 	if err != nil {
@@ -38,9 +40,9 @@ func (f *FindSong) Run() error {
 	}
 
 	queries := []string{
-		buildQuery("anison", title, programTitle, artist, conditions),
-		buildQuery("game", title, programTitle, artist, conditions),
-		buildQuery("side_effect", title, programTitle, artist, conditions),
+		buildQuery("anison", title, programTitle, artist, conditions, wordRegexp),
+		buildQuery("game", title, programTitle, artist, conditions, wordRegexp),
+		buildQuery("side_effect", title, programTitle, artist, conditions, wordRegexp),
 	}
 
 	var songs []model.SongFindResult
@@ -101,7 +103,7 @@ func (f *FindSong) Run() error {
 	return nil
 }
 
-func buildQuery(table string, title string, programTitle string, artist string, conditons map[string]bool) string {
+func buildQuery(table string, title string, programTitle string, artist string, conditons map[string]bool, wordRegexp bool) string {
 	condition := ""
 	join := fmt.Sprintf("INNER JOIN program ON %s.program_id = program.ID", table)
 	order := "ORDER BY program.start_date ASC"
@@ -113,11 +115,11 @@ func buildQuery(table string, title string, programTitle string, artist string, 
 			}
 			switch k {
 			case "findByTitle":
-				condition += fmt.Sprintf("title LIKE '%%%s%%'", title)
+				condition += buildWhereClause("title", title, wordRegexp)
 			case "findByProgramTitle":
-				condition += fmt.Sprintf("program_name LIKE '%%%s%%'", programTitle)
+				condition += buildWhereClause("program_name", programTitle, wordRegexp)
 			case "findByArtist":
-				condition += fmt.Sprintf("artist LIKE '%%%s%%'", artist)
+				condition += buildWhereClause("artist", artist, wordRegexp)
 			}
 		}
 	}
@@ -129,6 +131,13 @@ func buildQuery(table string, title string, programTitle string, artist string, 
 		condition,
 		order,
 	)
+}
+
+func buildWhereClause(tableName string, value string, wordRegexp bool) string {
+	if wordRegexp {
+		return fmt.Sprintf("%s = '%s'", tableName, value)
+	}
+	return fmt.Sprintf("%s LIKE '%%%s%%'", tableName, value)
 }
 
 func renderTable(data [][]string, header []string) {
