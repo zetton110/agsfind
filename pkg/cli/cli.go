@@ -68,6 +68,12 @@ func NewCliApp() *cli.App {
 					Value:   false,
 					Usage:   "Find information about the programs with details.",
 				},
+				&cli.BoolFlag{
+					Name:    "word-regexp",
+					Aliases: []string{"w"},
+					Value:   false,
+					Usage:   "Find information about programs only if they exactly match the search word.",
+				},
 			},
 			Action: findSongs,
 		},
@@ -81,6 +87,7 @@ func findSongs(c *cli.Context) error {
 	artist := c.String("singer")
 	databasePath := filepath.Join(c.String("agsf-db-base-path"), "database.sqlite")
 	verbose := c.Bool("verbose")
+	wordRegexp := c.Bool("word-regexp")
 
 	a := &action.FindSong{
 		Title:        title,
@@ -88,6 +95,7 @@ func findSongs(c *cli.Context) error {
 		Artist:       artist,
 		DatabasePath: databasePath,
 		Verbose:      verbose,
+		WordRegexp:   wordRegexp,
 	}
 	return a.Run()
 }
